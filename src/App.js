@@ -16,6 +16,7 @@ function App() {
   const [lastName, setLastName] = useState();
   const [list, setGuestList] = useState([]);
   const baseUrl = 'https://react-guest-list-host.herokuapp.com';
+  const [isChecked, setIsChecked] = useState(false);
 
   // fetch list of guests from the server
   useEffect(() => {
@@ -46,6 +47,7 @@ function App() {
         }),
       });
       const createdGuest = await response.json();
+      window.location.reload(false);
       console.log(createdGuest);
       return createdGuest;
     }
@@ -62,6 +64,7 @@ function App() {
       });
 
       const deletedGuest = await response.json();
+      window.location.reload(false);
       console.log(deletedGuest);
       return deletedGuest;
     }
@@ -78,11 +81,13 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          attending: !true,
+          attending: !attending,
         }),
       });
 
       const updatedGuest = await response.json();
+
+      window.location.reload(false);
       console.log(updatedGuest);
       return updatedGuest;
     }
@@ -90,6 +95,7 @@ function App() {
       console.error(error);
     });
   }
+
   return (
     <div data-test-id="guest" className="App">
       <header>
@@ -102,7 +108,7 @@ function App() {
             First name:
             <input
               label="First name"
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(event) => setFirstName(event.target.value)}
             />
           </label>
           <br />
@@ -110,7 +116,7 @@ function App() {
             Last name:
             <input
               label="Last name"
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(event) => setLastName(event.target.value)}
             />
           </label>
 
@@ -136,30 +142,23 @@ function App() {
               return (
                 <tr key={guest.id}>
                   <td>
+                    {guest.attending ? 'Attending' : 'Not attending'}
                     <input
-                      aria-label="attending"
                       type="checkbox"
-                      checked={guest.attending}
+                      aria-label="attending"
                       onChange={() => {
                         handleUpdate(guest.id, guest.attending);
                         console.log(guest);
                       }}
                     />
                   </td>
-                  <td>
-                    {''}
-                    {guest.firstName}
-                    {''}
-                  </td>
-                  <td>
-                    {''}
-                    {guest.lastName}
-                    {''}
-                  </td>
+                  <td> {guest.firstName} </td>
+                  <td> {guest.lastName} </td>
+
                   <button
                     type="button"
-                    aria-label="Delete"
                     onClick={() => handleDelete(guest.id)}
+                    aria-label="Remove"
                   >
                     Remove
                   </button>

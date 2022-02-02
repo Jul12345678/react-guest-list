@@ -1,9 +1,7 @@
 import './App.css';
-/** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+/** @jsxImportSource @emotion/react */
 import { useEffect, useState } from 'react';
-
-const baseUrl = 'https://react-guest-list-host.herokuapp.com/';
 
 const pageStyle = css``;
 
@@ -14,65 +12,57 @@ const guestList = css`
 `;
 
 function App() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [guestList, setGuestList] = useState();
-  const [isChecked, setIsChecked] = useState(false);
-  const [list, setList] = useState([]);
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState();
+  const [list, setGuestList] = useState([]);
+  const baseUrl = 'https://react-guest-list-host.herokuapp.com';
 
   // fetch list of guests from the server
   useEffect(() => {
-    const fetchList = async () => {
-      const response = await fetch(
-        `https://react-guest-list-host.herokuapp.com/`,
-      );
-      const info = await response.json();
-      setGuestList(info);
+    const fetchGuestList = async () => {
+      const response = await fetch(`${baseUrl}/guests`);
+      const listInfo = await response.json();
+      setGuestList(listInfo);
     };
 
-    fetchList().catch((error) => {
+    fetchGuestList().catch((error) => {
       console.error(error);
     });
   }, []);
 
   // on submit click
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
 
     async function newGuest() {
-      const response = await fetch(
-        `https://react-guest-list-host.herokuapp.com/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            firstName: firstName,
-            lastName: lastName,
-          }),
+      const response = await fetch(`${baseUrl}/guests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          firstName: firstName,
+          lastName: lastName,
+        }),
+      });
       const createdGuest = await response.json();
-      window.location.reload();
+      console.log(createdGuest);
       return createdGuest;
     }
 
     newGuest().catch((error) => {
       console.error(error);
     });
-  };
+  }
 
-  function handleDelete() {
-    const checkboxKeys = Object.keys(isChecked);
+  function handleDelete(id) {
     async function deleteGuest() {
-      const response = await fetch(`${baseUrl}/${checkboxKeys}`, {
+      const response = await fetch(`${baseUrl}/guests/${id}`, {
         method: 'DELETE',
       });
 
       const deletedGuest = await response.json();
-
-      window.location.reload();
+      console.log(deletedGuest);
       return deletedGuest;
     }
     deleteGuest().catch((error) => {
@@ -80,95 +70,199 @@ function App() {
     });
   }
 
-  function handleEdit() {
-    const checkboxKeys = Object.keys(isChecked);
-    async function editGuest() {
-      const response = await fetch(`${baseUrl}/${checkboxKeys}`, {
-        method: 'PATCH',
+  function handleUpdate(id, attending) {
+    async function updateGuest() {
+      const response = await fetch(`${baseUrl}/guests/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          attending: true,
+          attending: !true,
         }),
       });
 
       const updatedGuest = await response.json();
-
-      window.location.reload();
+      console.log(updatedGuest);
       return updatedGuest;
     }
-    editGuest().catch((error) => {
+    updateGuest().catch((error) => {
       console.error(error);
     });
   }
-
   return (
-    <div className="App">
-      <header className="header">
+    <div data-test-id="guest" className="App">
+      <header>
         <h1>Registration</h1>
       </header>
-      <div css={pageStyle}>
+
+      <div>
         <form onSubmit={handleSubmit}>
-          <label>First name:</label>
-          <input
-            type="text"
-            id="firstName"
-            onChange={(e) => setFirstName(e.target.value)}
-          />
+          <label text="First name">
+            First name:
+            <input
+              label="First name"
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </label>
           <br />
-          <label>Last name: </label>
-          <input
-            type="text"
-            id="lastName"
-            onChange={(e) => setLastName(e.target.value)}
-          />
-          <p>
-            <button>Submit</button>
-          </p>
+          <label text="Last name">
+            Last name:
+            <input
+              label="Last name"
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </label>
+
+          <button>Submit</button>
         </form>
-
-        {/* Guest list Table */}
-        <h1 css={guestList}> Guest list:</h1>
-
+      </div>
+      {
+        // table
+      }
+      <div>
         <table>
+          <h1> Guest list:</h1>
+
           <tbody>
             <tr>
-              <th>First Name / </th>
+              <th>State Of Attendance</th>
+              <th>F.Name / </th>
               <br />
               <br />
-              <th>Last Name</th>
+              <th>L.Name</th>
             </tr>
-            {list.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <input
-                    aria-label="attending"
-                    type="checkbox"
-                    defaultChecked={isChecked[item.id]}
-                    onChange={() => {
-                      setIsChecked({ ...setIsChecked, [item.id]: true });
-                    }}
-                  />
-                </td>
-                <td>{item.firstName}</td>
-                <td>{item.lastName}</td>
-                <td>{`*${item.attending}`}</td>
-              </tr>
-            ))}
+            {list.map((guest) => {
+              return (
+                <tr key={guest.id}>
+                  <td>
+                    <input
+                      aria-label="attending"
+                      type="checkbox"
+                      checked={guest.attending}
+                      onChange={() => {
+                        handleUpdate(guest.id, guest.attending);
+                        console.log(guest);
+                      }}
+                    />
+                  </td>
+                  <td>
+                    {''}
+                    {guest.firstName}
+                    {''}
+                  </td>
+                  <td>
+                    {''}
+                    {guest.lastName}
+                    {''}
+                  </td>
+                  <button
+                    type="button"
+                    aria-label="Delete"
+                    onClick={() => handleDelete(guest.id)}
+                  >
+                    Remove
+                  </button>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-        <button
-          type="button"
-          css={button}
-          aria-label="Remove"
-          onClick={(item) => handleDelete(item.id)}
-        >
-          Remove
-        </button>
       </div>
     </div>
   );
 }
 
 export default App;
+
+//  return (
+//    <div className="App">
+//      <header>
+//        <h1>Register the guest:</h1>
+//      </header>
+//      {/* Personalia input fields */}
+//      <form onSubmit={handleSubmit}>
+//        <label>
+//          <span>First name: </span>
+//        </label>
+//        <input
+//          type="text"
+//          id="firstName"
+//          onChange={(e) => setFirstName(e.target.value)}
+//        />
+//        <br />
+//        <br />
+//        <label>Last name: </label>
+//        <input
+//          type="text"
+//          id="lastName"
+//          onChange={(e) => setLastName(e.target.value)}
+//        />
+//        <br />
+//
+//        <p>
+//          <button>Submit</button>
+//        </p>
+//      </form>
+//
+//      {/* Tabelle */}
+//      <h1 className="guestlist"> Guest list:</h1>
+//
+//      <table>
+//        <tbody>
+//          <tr>
+//            <th></th>
+//            <th>First Name</th>
+//            <th>Last Name</th>
+//          </tr>
+//          {list.map((item) => {
+//            <tr
+//              key={item.id}
+//              className={item.attending ? 'attending' : 'notAttending'}
+//            >
+//              <td>
+//                <input
+//                  type="checkbox"
+//                  defaultChecked={checkboxes[item.id]}
+//                  onChange={() => {
+//                    setCheckboxes({ ...checkboxes, [item.id]: true });
+//                  }}
+//                />
+//              </td>
+//              <td>{item.firstName}</td>
+//              <td>{item.lastName}</td>
+//            </tr>;
+//          })}
+//        </tbody>
+//      </table>
+//
+//      {/* Edit-Button */}
+//      <p>
+//        <label>
+//          <button
+//            type="button"
+//            onClick={(item) => handleEdit(item.id)}
+//            id="delete"
+//          >
+//            Confirm guest attendance
+//          </button>
+//        </label>
+//      </p>
+//
+//      {/* Delete-Button */}
+//      <p>
+//        <label>
+//          <button
+//            type="button"
+//            onClick={(guest) => handleDelete(guest.id)}
+//            id="delete"
+//          >
+//            Delete guest
+//          </button>
+//        </label>
+//      </p>
+//    </div>
+//  );
+//}
+//
+// export default App;

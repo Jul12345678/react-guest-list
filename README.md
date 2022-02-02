@@ -68,3 +68,89 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `yarn build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+return (
+<div data-test-id="guest" className="App">
+<header>
+<h1>Registration</h1>
+</header>
+
+      <div>
+        <form onSubmit={handleSubmit}>
+          <label text="First name">
+            First name:
+            <input
+              label="First name"
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </label>
+          <br />
+          <label text="Last name">
+            Last name:
+            <input
+              label="Last name"
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </label>
+
+          <button>Submit</button>
+        </form>
+      </div>
+      {
+        // table
+      }
+      <div>
+        <table>
+          <h1> Guest list:</h1>
+
+          <tbody>
+            <tr>
+              <th>State Of Attendance</th>
+              <th>F.Name / </th>
+              <br />
+              <br />
+              <th>L.Name</th>
+            </tr>
+            {list.map((guest) => {
+              return (
+                <tr key={guest.id}>
+                  <td>
+                    <input
+                      aria-label="attending"
+                      type="checkbox"
+                      checked={guest.attending}
+                      onChange={() => {
+                        handleUpdate(guest.id, guest.attending);
+                        console.log(guest);
+                      }}
+                    />
+                  </td>
+                  <td>
+                    {''}
+                    {guest.firstName}
+                    {''}
+                  </td>
+                  <td>
+                    {''}
+                    {guest.lastName}
+                    {''}
+                  </td>
+                  <button
+                    type="button"
+                    aria-label="Delete"
+                    onClick={() => handleDelete(guest.id)}
+                  >
+                    Remove
+                  </button>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+);
+}
+
+export default App;
